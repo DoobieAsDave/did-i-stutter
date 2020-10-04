@@ -1,3 +1,5 @@
+BPM tempo;
+
 Gain bus;
 SinOsc oscSub => bus;
 SawOsc osc1 => bus;
@@ -11,10 +13,8 @@ SinOsc filterLfo => blackhole;
 
 56 => int key;
 0 => int chordIndex;
-65377::samp => dur bar;
+tempo.note => dur bar;
 bar * 8 => dur beat;
-(65377 / 4)::samp => dur quarterSampels;
-<<<quarterSampels>>>;
 
 1 => oscSub.gain;
 .2 => osc1.gain => osc2.gain => osc3.gain => osc4.gain;

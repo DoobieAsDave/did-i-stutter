@@ -3,7 +3,7 @@ SndBuf buffer1 => filter => dac;
 SndBuf buffer2 => filter => dac;
 
 SinOsc filterLfo => blackhole;
-PulseOsc combLfo => blackhole;
+SinOsc combLfo => blackhole;
 
 dac => WvOut render => blackhole;
 "did_i_stutter.wav" => render.wavFilename;
@@ -16,8 +16,7 @@ Std.mtof(60) => filter.freq;
 .75 => filter.gain;
 
 .075 => filterLfo.freq;
-5 => combLfo.freq;
-.8 => combLfo.width;
+.05 => combLfo.freq;
 
 float combDelay;
 buffer1.length() / 4 => dur breakLength;
@@ -26,8 +25,8 @@ buffer1.samples() / 4 => int beats;
 function void cut(int slice, dur duration) {    
     beats * slice => int position;
 
-    trigger(buffer1, position, 0::ms);
-    trigger(buffer2, position, combDelay::ms);    
+    trigger(buffer1, position, 0::samp);
+    trigger(buffer2, position, combDelay::samp);    
 
     duration => now;
 }
@@ -48,7 +47,8 @@ function void modFilterLfo() {
 function void modCombLfo() {
     while(true) {
         ((combLfo.last() + 1) / 2) * 2 => combDelay;
-        <<<combDelay>>>;
+        200 +=> combDelay;
+        //<<<combDelay>>>;
         5::ms => now;
     }
 }
