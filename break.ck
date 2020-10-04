@@ -3,7 +3,7 @@ SndBuf buffer1 => filter => dac;
 SndBuf buffer2 => filter => dac;
 
 SinOsc filterLfo => blackhole;
-SinOsc combLfo => blackhole;
+PulseOsc combLfo => blackhole;
 
 dac => WvOut render => blackhole;
 "did_i_stutter.wav" => render.wavFilename;
@@ -11,11 +11,13 @@ dac => WvOut render => blackhole;
 me.dir() + "break.wav" => buffer1.read => buffer2.read;
 .75 => buffer1.gain => buffer2.gain;
 0 => buffer1.pos => buffer2.pos;
+Std.mtof(60) => filter.freq;
 .4 => filter.Q;
 .75 => filter.gain;
 
 .075 => filterLfo.freq;
-2 => combLfo.freq;
+5 => combLfo.freq;
+.8 => combLfo.width;
 
 float combDelay;
 buffer1.length() / 4 => dur breakLength;
@@ -24,9 +26,8 @@ buffer1.samples() / 4 => int beats;
 function void cut(int slice, dur duration) {    
     beats * slice => int position;
 
-    trigger(buffer1, position, 0::samp);
-    trigger(buffer2, position, combDelay::samp);
-    //<<<combDelay>>>;
+    trigger(buffer1, position, 0::ms);
+    trigger(buffer2, position, combDelay::ms);    
 
     duration => now;
 }
@@ -46,12 +47,13 @@ function void modFilterLfo() {
 
 function void modCombLfo() {
     while(true) {
-        ((combLfo.last() + 1) / 2) * .5  => combDelay;
+        ((combLfo.last() + 1) / 2) * 2 => combDelay;
+        <<<combDelay>>>;
         5::ms => now;
     }
 }
 
-spork ~ modFilterLfo();
+//spork ~ modFilterLfo();
 spork ~ modCombLfo();
 
 function void original() {
@@ -124,6 +126,18 @@ function void partF() {
     cut(3, (breakLength) / 2);
 }
 
+function void experimental() {
+    partC();
+    partD();
+    partC();
+    partE();
+
+    partD();
+    partB();
+    partA();
+    partB();
+}
+
 while(true) {
     repeat(3) { original(); }
     partB();
@@ -137,15 +151,5 @@ while(true) {
     partA();
     original();
     partC();
-    partB();
-
-    partC();
-    partD();
-    partC();
-    partE();
-
-    partD();
-    partB();
-    partA();
     partB();
 }
